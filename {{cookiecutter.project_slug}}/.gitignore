@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ty_cache/
+.coverage
+htmlcov/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Agent working notes (keep docs, ignore scratch plans)
+.agents/plans/*
+!.agents/plans/.gitkeep
+
+# Data dumps — keep folders, ignore contents
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
