@@ -19,8 +19,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAX_AGENTS_LINES = 150
 REQUIRED_HEADINGS = ("Commands", "Layout", "Defaults")
+FORBIDDEN_LAYERS = frozenset({"adapters", "services"})
 DOMAIN_IMPORT_BAN = re.compile(
-    r"^\s*(from|import)\s+(\.\.adapters|[\w.]+\.adapters)\b",
+    r"^\s*(from|import)\s+(\.\.(adapters|services)|[\w.]+\.(adapters|services))\b",
     re.MULTILINE,
 )
 
@@ -43,42 +44,42 @@ def check_agents_md(path: Path) -> None:
     print(f"OK  AGENTS.md ({len(lines)} lines) {path}")
 
 
-def _imports_adapters(tree: ast.AST) -> list[str]:
+def _forbidden_imports(tree: ast.AST) -> list[str]:
     hits: list[str] = []
     for node in ast.walk(tree):
+        names: list[str] = []
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name == "adapters" or alias.name.endswith(".adapters"):
-                    hits.append(alias.name)
+            names.extend(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
-            mod = node.module or ""
-            if mod == "adapters" or mod.endswith(".adapters") or mod.startswith("adapters."):
-                hits.append(mod)
-            if node.level >= 2 and (mod == "adapters" or mod.startswith("adapters")):
-                hits.append(mod or "adapters")
+            if node.module:
+                names.append(node.module)
+            if node.level >= 2:
+                names.append(node.module or "")
+        for name in names:
+            parts = [p for p in name.split(".") if p]
+            if any(part in FORBIDDEN_LAYERS for part in parts):
+                hits.append(name or "relative adapters/services")
     return hits
 
 
-def check_domain_does_not_import_adapters(src_root: Path) -> None:
-    domain_dirs = list(src_root.glob("*/domain")) + list(src_root.glob("domain"))
-    if src_root.name == "src":
-        domain_dirs = list(src_root.glob("*/domain"))
+def check_domain_does_not_import_outer_layers(src_root: Path) -> None:
+    domain_dirs = list(src_root.glob("*/domain"))
     if not domain_dirs:
-        fail(f"no domain/ package under {src_root}")
+        fail(f"no src/<package>/domain under {src_root}")
     checked = 0
     for domain in domain_dirs:
         for py in domain.rglob("*.py"):
             checked += 1
             source = py.read_text(encoding="utf-8")
             if DOMAIN_IMPORT_BAN.search(source):
-                fail(f"{py} looks like it imports adapters")
+                fail(f"{py} looks like it imports adapters or services")
             try:
                 tree = ast.parse(source, filename=str(py))
             except SyntaxError as exc:
                 fail(f"{py} is not valid Python: {exc}")
-            hits = _imports_adapters(tree)
+            hits = _forbidden_imports(tree)
             if hits:
-                fail(f"{py} imports adapters: {hits}")
+                fail(f"{py} imports adapters or services: {hits}")
     print(f"OK  domain import rule ({checked} files) {src_root}")
 
 
@@ -119,7 +120,10 @@ def check_project(project: Path) -> None:
     src = project / "src"
     if not src.is_dir():
         fail(f"missing {src}")
-    check_domain_does_not_import_adapters(src)
+    check_domain_does_not_import_outer_layers(src)
+    arch = project / "tests" / "test_architecture.py"
+    if not arch.is_file():
+        fail(f"missing {arch}")
 
 
 def main() -> None:

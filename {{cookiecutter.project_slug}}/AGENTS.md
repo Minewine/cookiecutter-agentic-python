@@ -10,6 +10,7 @@ Primary agent: **Cline**. Keep this file short. Read linked docs only when the t
 ```bash
 uv sync
 uv run pytest
+uv run pytest tests/test_architecture.py
 uv run pytest tests/path/test_file.py -k name -q
 uv run ruff check --fix .
 uv run ruff format .
@@ -34,7 +35,7 @@ Do not invent a new top-level package. Grow inside these layers. Delete a layer 
 
 ## Defaults
 
-- Smallest correct change. Match existing style.
+- Smallest correct change. Do not rewrite a file to change one function.
 - Restate the task in one sentence before editing more than one file.
 - Ask if the request becomes a redesign, deletes data, or needs a new dependency.
 - Do not invent APIs, columns, config keys, or test results.
@@ -47,7 +48,7 @@ Do not invent a new top-level package. Grow inside these layers. Delete a layer 
 - Use `pathlib.Path`. No `os.path`.
 - Raise specific exceptions from `{{ cookiecutter.package_name }}.domain.errors`.
 - Domain functions are deterministic and unit-tested.
-- I/O lives in adapters. Services wire them. Domain does not import adapters.
+- I/O lives in adapters. Services wire them. Domain does not import adapters or services.
 
 ## Read when needed
 
