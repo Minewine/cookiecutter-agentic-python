@@ -1,0 +1,38 @@
+name: template
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  generate-and-prove:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install cookiecutter
+        run: pip install cookiecutter
+
+      - name: Generate child project
+        run: cookiecutter --no-input -o "$RUNNER_TEMP/generated" .
+
+      - name: Meta-checks (template + generated)
+        run: |
+          PROJECT=$(find "$RUNNER_TEMP/generated" -mindepth 1 -maxdepth 1 -type d | head -1)
+          echo "PROJECT=$PROJECT" >> "$GITHUB_ENV"
+          python scripts/check_template.py --project "$PROJECT"
+
+      - name: Prove generated app
+        working-directory: ${{ env.PROJECT }}
+        run: |
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run pytest

@@ -56,6 +56,7 @@ Do not invent a new top-level package. Grow inside these layers. Delete a layer 
 - Tests: `.agents/docs/testing.md`
 - Prior choices: `docs/adr/` and `.agents/docs/decisions.md`
 - Recurring bugs: `.agents/docs/known-issues.md`
+- Cline + z.ai / GLM: `.clinerules/00-zai-glm.md`
 
 ## After a miss
 

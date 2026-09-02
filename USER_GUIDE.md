@@ -58,7 +58,8 @@ Open Cline in that window. It reads `AGENTS.md` (native) and `.clinerules/`.
 | File | When |
 | --- | --- |
 | `AGENTS.md` | Every session. Keep under ~150 lines. |
-| `.clinerules/*.md` | Cline-native extras (workflow, Python, maintainability). |
+| `.clinerules/00-zai-glm.md` | Cline + z.ai / GLM provider and prompt shape. |
+| `.clinerules/*.md` | Other Cline extras (workflow, Python, maintainability). |
 | `.agents/docs/*` | Only when the task needs them. |
 | `docs/adr/` | Structural decisions that must outlive a chat. |
 

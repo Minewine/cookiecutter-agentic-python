@@ -7,11 +7,10 @@ It encodes 2026 agent-file practice (lean `AGENTS.md`, Cline `.clinerules/`, pro
 ## Generate a project
 
 ```bash
-# one-shot, no install
-uvx cookiecutter /path/to/cookiecutter-agentic-python
+# from GitHub — replace OWNER with your GitHub user or org
+uvx cookiecutter gh:OWNER/cookiecutter-agentic-python
 
-# or from this folder
-cd cookiecutter-agentic-python
+# from a local clone
 uvx cookiecutter .
 ```
 
@@ -31,7 +30,8 @@ Open the new folder in VS Code and start Cline. It will pick up `AGENTS.md` and 
 | Piece | Why it exists |
 | --- | --- |
 | `AGENTS.md` | Always-loaded, short operating manual (~100 lines). Commands first. |
-| `.clinerules/` | Cline-native rules split by topic so you can add sprint notes without bloating the root file. |
+| `.clinerules/00-zai-glm.md` | Known-good Cline + z.ai / GLM profile (provider URL, short prompts). |
+| `.clinerules/` | Other Cline rules split by topic. |
 | `.agents/docs/` | Detail Cline should open *only when the task needs it*. |
 | `src/<package>/{domain,services,adapters}` | Default layering for logical, testable code. Delete a layer if you do not need it. |
 | `uv` + Ruff + pytest + ty | Fast, modern quality gates the agent can actually run. |
@@ -45,4 +45,11 @@ Open the new folder in VS Code and start Cline. It will pick up `AGENTS.md` and 
 - Do not claim tests passed unless they were run.
 - When the agent gets something wrong twice, add a rule — or a test.
 
-See the generated project's `README.md` and `.agents/docs/` for the rest.
+CI on this repo generates a child project and runs its tests (`template` workflow). Meta-checks fail if `AGENTS.md` exceeds 150 lines, required headings are missing, or `domain` imports `adapters`.
+
+```bash
+pip install cookiecutter
+python scripts/check_template.py
+```
+
+See **[USER_GUIDE.md](USER_GUIDE.md)** for Cline + z.ai setup, the daily loop, and how to grow rules.
